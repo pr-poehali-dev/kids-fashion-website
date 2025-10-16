@@ -46,7 +46,7 @@ const Hero = () => {
           <div className="relative">
             <div className="aspect-square bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 rounded-3xl overflow-hidden">
               <img 
-                src="https://v3b.fal.media/files/b/koala/M8D4KGwtJcdH9hsRWhg-l_output.png" 
+                src="https://cdn.poehali.dev/projects/06c1dce4-4f5d-457f-af63-97d3d0e8270d/files/582d65c5-9035-44ce-9da0-1fd13eec0ece.jpg" 
                 alt="Детская одежда"
                 className="w-full h-full object-cover"
               />

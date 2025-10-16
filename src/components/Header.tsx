@@ -2,10 +2,17 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Cart } from '@/components/Cart';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    document.documentElement.classList.toggle('dark');
+  };
 
   const navLinks = [
     { name: 'Главная', href: '#home' },
@@ -16,10 +23,10 @@ const Header = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <a href="#home" className="flex items-center gap-2 cursor-pointer">
           <Icon name="Baby" size={28} className="text-primary" />
           <h1 className="text-2xl font-bold text-foreground">BRANDKIDS</h1>
-        </div>
+        </a>
 
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
@@ -34,10 +41,11 @@ const Header = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="icon">
-            <Icon name="Search" size={20} />
-          </Button>
-          <Cart />
+          <div className="flex items-center gap-2">
+            <Icon name="Sun" size={16} className="text-muted-foreground" />
+            <Switch checked={isDark} onCheckedChange={toggleTheme} />
+            <Icon name="Moon" size={16} className="text-muted-foreground" />
+          </div>
         </div>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>

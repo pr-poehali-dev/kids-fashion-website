@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,10 +24,18 @@ const PRODUCTS_API = 'https://functions.poehali.dev/6c2374fc-6989-4ca9-adcd-d21f
 const UPLOAD_API = 'https://functions.poehali.dev/6c1d631a-d6df-42e6-a03b-91ad485129ce';
 
 const Admin = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const isAuth = localStorage.getItem('admin_auth');
+    if (!isAuth) {
+      navigate('/admin/login');
+    }
+  }, [navigate]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -55,35 +64,18 @@ const Admin = () => {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onloadend = async () => {
-      try {
-        const base64 = reader.result as string;
-        const response = await fetch(UPLOAD_API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image: base64,
-            filename: file.name,
-          }),
-        });
-        const data = await response.json();
-        setFormData({ ...formData, image_url: data.url });
-        toast({
-          title: 'Успешно',
-          description: 'Изображение загружено',
-        });
-      } catch (error) {
-        toast({
-          title: 'Ошибка',
-          description: 'Не удалось загрузить изображение',
-          variant: 'destructive',
-        });
-      }
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setFormData({ ...formData, image_url: base64 });
+      toast({
+        title: 'Успешно',
+        description: 'Изображение загружено',
+      });
     };
     reader.readAsDataURL(file);
   };
@@ -182,20 +174,37 @@ const Admin = () => {
             <h1 className="text-3xl font-bold mb-2">Админ-панель</h1>
             <p className="text-muted-foreground">Управление каталогом товаров</p>
           </div>
-          <Button variant="outline" asChild>
-            <a href="/">
-              <Icon name="ArrowLeft" size={16} className="mr-2" />
-              На сайт
-            </a>
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                localStorage.removeItem('admin_auth');
+                navigate('/admin/login');
+              }}
+            >
+              <Icon name="LogOut" size={16} className="mr-2" />
+              Выйти
+            </Button>
+            <Button variant="outline" asChild>
+              <a href="/">
+                <Icon name="ArrowLeft" size={16} className="mr-2" />
+                На сайт
+              </a>
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="products" className="space-y-6">
           <TabsList>
             <TabsTrigger value="products">Товары ({products.length})</TabsTrigger>
             <TabsTrigger value="add">
-              {editingProduct ? 'Редактировать' : 'Добавить товар'}
+              Добавить товар
             </TabsTrigger>
+            {editingProduct && (
+              <TabsTrigger value="edit">
+                Редактировать товар
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="products" className="space-y-4">
@@ -241,9 +250,7 @@ const Admin = () => {
 
           <TabsContent value="add">
             <Card className="p-6 max-w-2xl mx-auto">
-              <h2 className="text-2xl font-bold mb-6">
-                {editingProduct ? 'Редактировать товар' : 'Добавить новый товар'}
-              </h2>
+              <h2 className="text-2xl font-bold mb-6">Добавить новый товар</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label htmlFor="name">Название товара</Label>
@@ -339,9 +346,114 @@ const Admin = () => {
 
                 <div className="flex gap-3 pt-4">
                   <Button type="submit" disabled={isLoading} className="flex-1">
-                    {isLoading ? 'Сохранение...' : editingProduct ? 'Обновить' : 'Добавить'}
+                    {isLoading ? 'Сохранение...' : 'Добавить товар'}
                   </Button>
-                  {editingProduct && (
+                </div>
+              </form>
+            </Card>
+          </TabsContent>
+
+          {editingProduct && (
+            <TabsContent value="edit">
+              <Card className="p-6 max-w-2xl mx-auto">
+                <h2 className="text-2xl font-bold mb-6">Редактировать товар</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit_name">Название товара</Label>
+                    <Input
+                      id="edit_name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit_price">Цена (₽)</Label>
+                    <Input
+                      id="edit_price"
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit_image">Изображение товара</Label>
+                    <Input
+                      id="edit_image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                    />
+                    {formData.image_url && (
+                      <div className="mt-2 aspect-video max-w-xs rounded-lg overflow-hidden bg-muted">
+                        <img
+                          src={formData.image_url}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit_age_range">Возрастная группа</Label>
+                    <Select
+                      value={formData.age_range}
+                      onValueChange={(value) => setFormData({ ...formData, age_range: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0-12">0-12 месяцев</SelectItem>
+                        <SelectItem value="1-3">1-3 года</SelectItem>
+                        <SelectItem value="4-6">4-6 лет</SelectItem>
+                        <SelectItem value="7-10">7-10 лет</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit_gender">Пол</Label>
+                    <Select
+                      value={formData.gender}
+                      onValueChange={(value) => setFormData({ ...formData, gender: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unisex">Унисекс</SelectItem>
+                        <SelectItem value="boy">Мальчик</SelectItem>
+                        <SelectItem value="girl">Девочка</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit_brand">Бренд</Label>
+                    <Select
+                      value={formData.brand}
+                      onValueChange={(value) => setFormData({ ...formData, brand: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="H&M">H&M</SelectItem>
+                        <SelectItem value="C&A">C&A</SelectItem>
+                        <SelectItem value="U.S.Polo Assn.">U.S.Polo Assn.</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <Button type="submit" disabled={isLoading} className="flex-1">
+                      {isLoading ? 'Сохранение...' : 'Обновить товар'}
+                    </Button>
                     <Button
                       type="button"
                       variant="outline"
@@ -359,11 +471,11 @@ const Admin = () => {
                     >
                       Отмена
                     </Button>
-                  )}
-                </div>
-              </form>
-            </Card>
-          </TabsContent>
+                  </div>
+                </form>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
