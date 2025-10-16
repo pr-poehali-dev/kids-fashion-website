@@ -10,11 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 
 interface Product {
   id: number;
+  article: string;
   name: string;
   price: number;
   image_url: string;
   age_range: string;
   gender: 'boy' | 'girl' | 'unisex';
+  brand: string;
 }
 
 const PRODUCTS_API = 'https://functions.poehali.dev/6c2374fc-6989-4ca9-adcd-d21f76efc9d7';
@@ -32,6 +34,7 @@ const Admin = () => {
     image_url: '',
     age_range: '0-12',
     gender: 'unisex',
+    brand: 'H&M',
   });
 
   useEffect(() => {
@@ -123,6 +126,7 @@ const Admin = () => {
         image_url: '',
         age_range: '0-12',
         gender: 'unisex',
+        brand: 'H&M',
       });
       setEditingProduct(null);
       loadProducts();
@@ -145,6 +149,7 @@ const Admin = () => {
       image_url: product.image_url,
       age_range: product.age_range,
       gender: product.gender,
+      brand: product.brand || 'H&M',
     });
   };
 
@@ -204,10 +209,12 @@ const Admin = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
+                  <div className="text-xs text-muted-foreground mb-1">Артикул: {product.article}</div>
                   <h3 className="font-semibold mb-1">{product.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-sm text-muted-foreground mb-1">
                     {product.age_range} | {product.gender}
                   </p>
+                  <p className="text-sm text-muted-foreground mb-2">{product.brand}</p>
                   <p className="text-lg font-bold mb-3">{product.price} ₽</p>
                   <div className="flex gap-2">
                     <Button
@@ -313,6 +320,23 @@ const Admin = () => {
                   </Select>
                 </div>
 
+                <div>
+                  <Label htmlFor="brand">Бренд</Label>
+                  <Select
+                    value={formData.brand}
+                    onValueChange={(value) => setFormData({ ...formData, brand: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="H&M">H&M</SelectItem>
+                      <SelectItem value="C&A">C&A</SelectItem>
+                      <SelectItem value="U.S.Polo Assn.">U.S.Polo Assn.</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex gap-3 pt-4">
                   <Button type="submit" disabled={isLoading} className="flex-1">
                     {isLoading ? 'Сохранение...' : editingProduct ? 'Обновить' : 'Добавить'}
@@ -329,6 +353,7 @@ const Admin = () => {
                           image_url: '',
                           age_range: '0-12',
                           gender: 'unisex',
+                          brand: 'H&M',
                         });
                       }}
                     >

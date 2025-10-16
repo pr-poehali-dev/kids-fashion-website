@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Cart } from '@/components/Cart';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -36,9 +37,7 @@ const Header = () => {
           <Button variant="ghost" size="icon">
             <Icon name="Search" size={20} />
           </Button>
-          <Button variant="ghost" size="icon">
-            <Icon name="ShoppingBag" size={20} />
-          </Button>
+          <Cart />
         </div>
 
         <Sheet open={isOpen} onOpenChange={setIsOpen}>

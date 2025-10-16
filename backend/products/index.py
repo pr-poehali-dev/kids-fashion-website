@@ -39,7 +39,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if product_id:
                 cursor.execute(
-                    "SELECT id, name, price, image_url, age_range, gender, created_at, updated_at FROM products WHERE id = " + str(int(product_id))
+                    "SELECT id, article, name, price, image_url, age_range, gender, brand, created_at, updated_at FROM products WHERE id = " + str(int(product_id))
                 )
                 product = cursor.fetchone()
                 if not product:
@@ -55,7 +55,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             else:
                 cursor.execute(
-                    "SELECT id, name, price, image_url, age_range, gender, created_at, updated_at FROM products ORDER BY created_at DESC"
+                    "SELECT id, article, name, price, image_url, age_range, gender, brand, created_at, updated_at FROM products ORDER BY created_at DESC"
                 )
                 products = cursor.fetchall()
                 return {
@@ -71,9 +71,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             image_url = body_data.get('image_url', '').replace("'", "''")
             age_range = body_data.get('age_range', '').replace("'", "''")
             gender = body_data.get('gender', '').replace("'", "''")
+            brand = body_data.get('brand', '').replace("'", "''")
+            
+            cursor.execute("SELECT COALESCE(MAX(CAST(SUBSTRING(article FROM 3) AS INTEGER)), 999) + 1 as next_num FROM products WHERE article LIKE 'BK%'")
+            result = cursor.fetchone()
+            next_num = dict(result).get('next_num', 1000) if result else 1000
+            article = f'BK{str(next_num).zfill(4)}'
             
             cursor.execute(
-                f"INSERT INTO products (name, price, image_url, age_range, gender) VALUES ('{name}', {price}, '{image_url}', '{age_range}', '{gender}') RETURNING id, name, price, image_url, age_range, gender, created_at, updated_at"
+                f"INSERT INTO products (article, name, price, image_url, age_range, gender, brand) VALUES ('{article}', '{name}', {price}, '{image_url}', '{age_range}', '{gender}', '{brand}') RETURNING id, article, name, price, image_url, age_range, gender, brand, created_at, updated_at"
             )
             new_product = cursor.fetchone()
             conn.commit()
@@ -92,9 +98,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             image_url = body_data.get('image_url', '').replace("'", "''")
             age_range = body_data.get('age_range', '').replace("'", "''")
             gender = body_data.get('gender', '').replace("'", "''")
+            brand = body_data.get('brand', '').replace("'", "''")
             
             cursor.execute(
-                f"UPDATE products SET name = '{name}', price = {price}, image_url = '{image_url}', age_range = '{age_range}', gender = '{gender}', updated_at = CURRENT_TIMESTAMP WHERE id = {product_id} RETURNING id, name, price, image_url, age_range, gender, created_at, updated_at"
+                f"UPDATE products SET name = '{name}', price = {price}, image_url = '{image_url}', age_range = '{age_range}', gender = '{gender}', brand = '{brand}', updated_at = CURRENT_TIMESTAMP WHERE id = {product_id} RETURNING id, article, name, price, image_url, age_range, gender, brand, created_at, updated_at"
             )
             updated_product = cursor.fetchone()
             conn.commit()

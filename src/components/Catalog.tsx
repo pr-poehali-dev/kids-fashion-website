@@ -3,14 +3,18 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
+import { useCart } from '@/components/Cart';
+import { useToast } from '@/hooks/use-toast';
 
 interface Product {
   id: number;
+  article: string;
   name: string;
   price: number;
   image_url: string;
   age_range: string;
   gender: 'boy' | 'girl' | 'unisex';
+  brand: string;
 }
 
 const PRODUCTS_API = 'https://functions.poehali.dev/6c2374fc-6989-4ca9-adcd-d21f76efc9d7';
@@ -18,8 +22,11 @@ const PRODUCTS_API = 'https://functions.poehali.dev/6c2374fc-6989-4ca9-adcd-d21f
 const Catalog = () => {
   const [selectedAge, setSelectedAge] = useState('all');
   const [selectedGender, setSelectedGender] = useState<'all' | 'boy' | 'girl'>('all');
+  const [selectedBrand, setSelectedBrand] = useState('all');
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { addToCart } = useCart();
+  const { toast } = useToast();
 
   const ageRanges = [
     { value: 'all', label: 'Все возраста' },
@@ -45,10 +52,13 @@ const Catalog = () => {
     }
   };
 
+  const brands = ['H&M', 'C&A', 'U.S.Polo Assn.'];
+
   const filteredProducts = products.filter((product) => {
     const ageMatch = selectedAge === 'all' || product.age_range === selectedAge;
     const genderMatch = selectedGender === 'all' || product.gender === selectedGender || product.gender === 'unisex';
-    return ageMatch && genderMatch;
+    const brandMatch = selectedBrand === 'all' || product.brand === selectedBrand;
+    return ageMatch && genderMatch && brandMatch;
   });
 
   return (
@@ -71,7 +81,7 @@ const Catalog = () => {
           </Tabs>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
+        <div className="flex flex-wrap justify-center gap-3 mb-6">
           {ageRanges.map((age) => (
             <Button
               key={age.value}
@@ -80,6 +90,26 @@ const Catalog = () => {
               className="rounded-full"
             >
               {age.label}
+            </Button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
+          <Button
+            variant={selectedBrand === 'all' ? 'secondary' : 'outline'}
+            onClick={() => setSelectedBrand('all')}
+            size="sm"
+          >
+            Все бренды
+          </Button>
+          {brands.map((brand) => (
+            <Button
+              key={brand}
+              variant={selectedBrand === brand ? 'secondary' : 'outline'}
+              onClick={() => setSelectedBrand(brand)}
+              size="sm"
+            >
+              {brand}
             </Button>
           ))}
         </div>
@@ -102,6 +132,7 @@ const Catalog = () => {
                     />
                   </div>
                   <div className="p-4">
+                    <div className="text-xs text-muted-foreground mb-2">Арт: {product.article}</div>
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
                         {ageRanges.find(a => a.value === product.age_range)?.label}
@@ -112,10 +143,21 @@ const Catalog = () => {
                         </span>
                       )}
                     </div>
-                    <h4 className="font-semibold mb-2">{product.name}</h4>
+                    <h4 className="font-semibold mb-1">{product.name}</h4>
+                    <p className="text-sm text-muted-foreground mb-2">{product.brand}</p>
                     <div className="flex items-center justify-between">
                       <span className="text-xl font-bold">{product.price} ₽</span>
-                      <Button size="sm" className="gap-2">
+                      <Button
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => {
+                          addToCart(product);
+                          toast({
+                            title: 'Добавлено в корзину',
+                            description: product.name,
+                          });
+                        }}
+                      >
                         <Icon name="ShoppingCart" size={16} />
                         В корзину
                       </Button>
