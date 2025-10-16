@@ -8,7 +8,7 @@ const Footer = () => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Icon name="Baby" size={24} />
-              <h3 className="text-xl font-bold">KidStyle</h3>
+              <h3 className="text-xl font-bold">BRANDKIDS</h3>
             </div>
             <p className="text-sm text-background/70">
               Премиум детская одежда от мировых брендов для детей 0-10 лет
@@ -42,14 +42,14 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-2">
                 <Icon name="Mail" size={16} />
-                <span>info@kidstyle.ru</span>
+                <span>info@brandkids.ru</span>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-background/20 pt-6 text-center text-sm text-background/70">
-          <p>&copy; 2024 KidStyle. Все права защищены.</p>
+          <p>&copy; 2024 BRANDKIDS. Все права защищены.</p>
         </div>
       </div>
     </footer>

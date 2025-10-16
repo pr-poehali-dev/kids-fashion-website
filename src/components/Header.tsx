@@ -17,7 +17,7 @@ const Header = () => {
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon name="Baby" size={28} className="text-primary" />
-          <h1 className="text-2xl font-bold text-foreground">KidStyle</h1>
+          <h1 className="text-2xl font-bold text-foreground">BRANDKIDS</h1>
         </div>
 
         <nav className="hidden md:flex items-center gap-8">

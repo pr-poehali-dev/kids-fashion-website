@@ -9,7 +9,7 @@ const Contacts = () => {
       title: 'WhatsApp',
       description: 'Персональный подбор образа',
       action: 'Написать',
-      link: 'https://wa.me/79000000000',
+      link: 'https://wa.me/79633984703',
       color: 'text-green-600',
     },
     {
@@ -66,9 +66,11 @@ const Contacts = () => {
             <p className="text-muted-foreground mb-6">
               Напишите нам в WhatsApp — мы подберем образ, отправим фото надетых вещей и поможем с размером
             </p>
-            <Button size="lg" className="gap-2">
-              <Icon name="MessageCircle" size={20} />
-              Написать в WhatsApp
+            <Button size="lg" className="gap-2" asChild>
+              <a href="https://wa.me/79633984703" target="_blank" rel="noopener noreferrer">
+                <Icon name="MessageCircle" size={20} />
+                Написать в WhatsApp
+              </a>
             </Button>
           </div>
         </Card>

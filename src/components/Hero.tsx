@@ -21,9 +21,11 @@ const Hero = () => {
                 <Icon name="ShoppingBag" size={20} />
                 В каталог
               </Button>
-              <Button size="lg" variant="outline" className="gap-2">
-                <Icon name="MessageCircle" size={20} />
-                WhatsApp
+              <Button size="lg" variant="outline" className="gap-2" asChild>
+                <a href="https://wa.me/79633984703" target="_blank" rel="noopener noreferrer">
+                  <Icon name="MessageCircle" size={20} />
+                  WhatsApp
+                </a>
               </Button>
             </div>
             <div className="flex gap-8 pt-4">
