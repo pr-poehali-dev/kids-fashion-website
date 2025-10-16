@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,14 +8,18 @@ interface Product {
   id: number;
   name: string;
   price: number;
-  image: string;
-  ageRange: string;
+  image_url: string;
+  age_range: string;
   gender: 'boy' | 'girl' | 'unisex';
 }
+
+const PRODUCTS_API = 'https://functions.poehali.dev/6c2374fc-6989-4ca9-adcd-d21f76efc9d7';
 
 const Catalog = () => {
   const [selectedAge, setSelectedAge] = useState('all');
   const [selectedGender, setSelectedGender] = useState<'all' | 'boy' | 'girl'>('all');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const ageRanges = [
     { value: 'all', label: 'Все возраста' },
@@ -25,59 +29,24 @@ const Catalog = () => {
     { value: '7-10', label: '7-10 лет' },
   ];
 
-  const products: Product[] = [
-    {
-      id: 1,
-      name: 'Хлопковый комбинезон',
-      price: 2499,
-      image: '/placeholder.svg',
-      ageRange: '0-12',
-      gender: 'unisex',
-    },
-    {
-      id: 2,
-      name: 'Платье с рюшами',
-      price: 3299,
-      image: '/placeholder.svg',
-      ageRange: '1-3',
-      gender: 'girl',
-    },
-    {
-      id: 3,
-      name: 'Спортивный костюм',
-      price: 4199,
-      image: '/placeholder.svg',
-      ageRange: '4-6',
-      gender: 'boy',
-    },
-    {
-      id: 4,
-      name: 'Джинсовая куртка',
-      price: 5499,
-      image: '/placeholder.svg',
-      ageRange: '7-10',
-      gender: 'unisex',
-    },
-    {
-      id: 5,
-      name: 'Летний сарафан',
-      price: 2899,
-      image: '/placeholder.svg',
-      ageRange: '4-6',
-      gender: 'girl',
-    },
-    {
-      id: 6,
-      name: 'Толстовка с капюшоном',
-      price: 3499,
-      image: '/placeholder.svg',
-      ageRange: '7-10',
-      gender: 'boy',
-    },
-  ];
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      const response = await fetch(PRODUCTS_API);
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredProducts = products.filter((product) => {
-    const ageMatch = selectedAge === 'all' || product.ageRange === selectedAge;
+    const ageMatch = selectedAge === 'all' || product.age_range === selectedAge;
     const genderMatch = selectedGender === 'all' || product.gender === selectedGender || product.gender === 'unisex';
     return ageMatch && genderMatch;
   });
@@ -115,45 +84,54 @@ const Catalog = () => {
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts.map((product) => (
-            <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
-              <div className="aspect-[3/4] bg-muted overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                    {ageRanges.find(a => a.value === product.ageRange)?.label}
-                  </span>
-                  {product.gender !== 'unisex' && (
-                    <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">
-                      {product.gender === 'boy' ? '👦' : '👧'}
-                    </span>
-                  )}
-                </div>
-                <h4 className="font-semibold mb-2">{product.name}</h4>
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-bold">{product.price} ₽</span>
-                  <Button size="sm" className="gap-2">
-                    <Icon name="ShoppingCart" size={16} />
-                    В корзину
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-
-        {filteredProducts.length === 0 && (
+        {isLoading ? (
           <div className="text-center py-12">
-            <Icon name="Package" size={48} className="mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">Товары не найдены. Попробуйте изменить фильтры.</p>
+            <Icon name="Loader2" size={48} className="mx-auto mb-4 text-muted-foreground animate-spin" />
+            <p className="text-muted-foreground">Загрузка товаров...</p>
           </div>
+        ) : (
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts.map((product) => (
+                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
+                  <div className="aspect-[3/4] bg-muted overflow-hidden">
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                        {ageRanges.find(a => a.value === product.age_range)?.label}
+                      </span>
+                      {product.gender !== 'unisex' && (
+                        <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded-full">
+                          {product.gender === 'boy' ? '👦' : '👧'}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="font-semibold mb-2">{product.name}</h4>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xl font-bold">{product.price} ₽</span>
+                      <Button size="sm" className="gap-2">
+                        <Icon name="ShoppingCart" size={16} />
+                        В корзину
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            {filteredProducts.length === 0 && !isLoading && (
+              <div className="text-center py-12">
+                <Icon name="Package" size={48} className="mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">Товары не найдены. Попробуйте изменить фильтры.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>
